@@ -1,51 +1,51 @@
 package com.CESIZen.prod.dto.tracker;
 
-import java.time.LocalDate;
-
 public class EmotionTrackerResponseDto {
-    private Long id;
-    private String emotionName;
-    private String description;
-    private LocalDate date;
 
-    public EmotionTrackerResponseDto(Long id, String emotionName, String description, LocalDate date) {
+    private Long id;
+    private String emotion;
+    private String description;
+    private String date;
+
+    public EmotionTrackerResponseDto() {
+    }
+
+    public EmotionTrackerResponseDto(Long id, String emotion, String description, String date) {
         this.id = id;
-        this.emotionName = emotionName;
+        this.emotion = emotion;
         this.description = description;
         this.date = date;
     }
 
-    // Getters
     public Long getId() {
         return id;
     }
 
-    public String getEmotionName() {
-        return emotionName;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmotion() {
+        return emotion;
+    }
+
+    public void setEmotion(String emotion) {
+        this.emotion = emotion;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public LocalDate getDate() {
-        return date;
-    }
-
-    // Setters
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setEmotionName(String emotionName) {
-        this.emotionName = emotionName;
-    }
-
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public void setDate(LocalDate date) {
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
         this.date = date;
     }
 }

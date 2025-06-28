@@ -3,9 +3,10 @@ package com.CESIZen.prod.dto.tracker;
 import java.time.LocalDate;
 
 public class EmotionTrackerRequestDto {
-    public Long emotionId;
-    public String description;
-    public LocalDate date;
+    private Long emotionId;
+    private String description;
+    private LocalDate date;
+    
 
     public Long getEmotionId() {
         return emotionId;

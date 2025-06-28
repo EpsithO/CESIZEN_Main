@@ -30,19 +30,19 @@ public class EmotionTrackerService {
                         e.getId(),
                         e.getEmotion().getName(),
                         e.getDescription(),
-                        e.getDate()
+                        e.getDate().toString()  // ✅ conversion ici
                 ))
                 .collect(Collectors.toList());
     }
 
     public EmotionTrackerResponseDto createTracker(EmotionTrackerRequestDto dto, User user) {
-        EmotionLevel2 emotion = emotionRepo.findById(dto.emotionId)
+        EmotionLevel2 emotion = emotionRepo.findById(dto.getEmotionId())
                 .orElseThrow(() -> new RuntimeException("Émotion non trouvée"));
 
         EmotionTracker tracker = new EmotionTracker();
         tracker.setEmotion(emotion);
-        tracker.setDescription(dto.description);
-        tracker.setDate(dto.date);
+        tracker.setDescription(dto.getDescription());
+        tracker.setDate(dto.getDate());
         tracker.setUser(user);
 
         EmotionTracker saved = repository.save(tracker);
@@ -50,7 +50,7 @@ public class EmotionTrackerService {
                 saved.getId(),
                 saved.getEmotion().getName(),
                 saved.getDescription(),
-                saved.getDate()
+                saved.getDate().toString()  // ✅ conversion ici
         );
     }
 
@@ -58,19 +58,19 @@ public class EmotionTrackerService {
         EmotionTracker tracker = repository.findById(id).orElseThrow();
         if (!tracker.getUser().getId().equals(user.getId())) throw new RuntimeException("Accès refusé");
 
-        EmotionLevel2 emotion = emotionRepo.findById(dto.emotionId)
+        EmotionLevel2 emotion = emotionRepo.findById(dto.getEmotionId())
                 .orElseThrow(() -> new RuntimeException("Émotion non trouvée"));
 
         tracker.setEmotion(emotion);
-        tracker.setDescription(dto.description);
-        tracker.setDate(dto.date);
+        tracker.setDescription(dto.getDescription());
+        tracker.setDate(dto.getDate());
 
         EmotionTracker updated = repository.save(tracker);
         return new EmotionTrackerResponseDto(
                 updated.getId(),
                 updated.getEmotion().getName(),
                 updated.getDescription(),
-                updated.getDate()
+                updated.getDate().toString()  // ✅ conversion ici
         );
     }
 
