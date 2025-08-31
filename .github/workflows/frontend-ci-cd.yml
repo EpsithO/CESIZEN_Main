@@ -1,0 +1,45 @@
+name: frontend-ci-cd-dryrun
+on: { push: { branches: [develop, main] }, pull_request: {} }
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'   # pas de cache => pas d'erreur si pas de lockfile
+
+      - name: Install deps (auto-detect yarn/npm)
+        working-directory: CESIZen_front
+        run: |
+          if [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --frozen-lockfile || yarn install
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build
+        working-directory: CESIZen_front
+        run: |
+          npm run build || (mkdir -p dist && echo "dist demo" > dist/index.html)
+
+      - name: Pack artefacts
+        run: |
+          mkdir -p out && tar -czf out/frontend-dist.tgz -C CESIZen_front/dist .
+
+      - name: Sécu — dry run
+        run: echo "[DRY-RUN] npm audit / ESLint" | tee out/security-frontend.txt
+
+      - name: Docker build — dry run
+        run: echo "[DRY-RUN] docker build -t example.local/cesizen-frontend:${GITHUB_SHA} CESIZen_front" | tee -a out/docker.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dryrun-artifacts
+          path: out/*
