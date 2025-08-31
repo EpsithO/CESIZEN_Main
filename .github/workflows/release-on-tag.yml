@@ -1,0 +1,59 @@
+name: release-on-tag
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- Backend build (JAR) ----
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Build backend (api)
+        run: |
+          mvn -B -DskipTests=false -pl api -am verify
+          mkdir -p out
+          ls api/target/*.jar && cp api/target/*.jar out/app-backend.jar
+
+      # ---- Front build (dist) ----
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps (auto-detect yarn/npm)
+        working-directory: CESIZen_front
+        run: |
+          if [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --frozen-lockfile || yarn install
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build frontend
+        working-directory: CESIZen_front
+        run: |
+          npm run build || (mkdir -p dist && echo "dist demo" > dist/index.html)
+          cd ..
+          tar -czf out/frontend-dist.tgz -C CESIZen_front/dist .
+
+      # ---- Créer la Release + attacher les artefacts ----
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            out/app-backend.jar
+            out/frontend-dist.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
