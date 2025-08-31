@@ -1,0 +1,27 @@
+name: backend-ci-cd-dryrun
+on:
+  push: { branches: [develop, main] }
+  pull_request: { branches: [develop, main] }
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with: { path: ~/.m2/repository, key: m2-${{ hashFiles('**/pom.xml') }} }
+      - run: mvn -B -DskipTests=false -pl api -am verify
+      - name: Récup artefact
+        run: |
+          mkdir -p out && (ls api/target/*.jar && cp api/target/*.jar out/app-backend.jar) || echo "(Jar d’exemple)" > out/app-backend.jar
+      - name: Sécu — dry run
+        run: echo "[DRY-RUN] OWASP Dependency-Check / CodeQL" | tee out/security-backend.txt
+      - name: Docker build — dry run
+        run: echo "[DRY-RUN] docker build -t example.local/cesizen-backend:${GITHUB_SHA} api" | tee -a out/docker.txt
+      - name: Deploy — dry run
+        run: echo "[DRY-RUN] ssh prod && docker compose up -d" | tee -a out/deploy.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: backend-dryrun-artifacts, path: out/* }

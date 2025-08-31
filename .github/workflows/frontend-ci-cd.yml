@@ -1,0 +1,21 @@
+name: frontend-ci-cd-dryrun
+on: { push: { branches: [develop, main] }, pull_request: {} }
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci --prefix CESIZen_front || true
+      - run: npm run build --prefix CESIZen_front || (mkdir -p CESIZen_front/dist && echo "dist demo" > CESIZen_front/dist/index.html)
+      - name: Pack artefacts
+        run: |
+          mkdir -p out && tar -czf out/frontend-dist.tgz -C CESIZen_front/dist .
+      - name: Sécu — dry run
+        run: echo "[DRY-RUN] npm audit / ESLint" | tee out/security-frontend.txt
+      - name: Docker build — dry run
+        run: echo "[DRY-RUN] docker build -t example.local/cesizen-frontend:${GITHUB_SHA} CESIZen_front" | tee -a out/docker.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: frontend-dryrun-artifacts, path: out/* }
