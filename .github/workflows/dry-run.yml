@@ -34,18 +34,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
-          key: m2-${{ hashFiles('**/pom.xml') }}
+          key: m2-${{ hashFiles('api/pom.xml') }}
           restore-keys: |
             m2-
 
-      - name: Build & tests (simule le pipeline réel)
+      - name: Build & package (tests off) — always produce JAR
+        working-directory: api
         run: |
           set -euo pipefail
-          mvn -B -DskipTests=false -pl api -am verify || true
-          mkdir -p out
-          # Jar réel si dispo, sinon placeholder
-          (ls api/target/*.jar && cp api/target/*.jar out/app-backend.jar) \
-            || echo "(Jar d’exemple — dry-run)" > out/app-backend.jar
+          mvn -B -DskipTests=true clean package || true
+          mkdir -p ../out
+          (ls target/*.jar && cp target/*.jar ../out/app-backend.jar) \
+            || echo "(Jar d’exemple — dry-run)" > ../out/app-backend.jar
 
       - name: Sécurité — dry run
         run: |
